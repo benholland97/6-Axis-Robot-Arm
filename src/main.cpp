@@ -12,6 +12,8 @@ SerialRX* sRX;
 float angles[NUM_SERVOS];
 // boolean newData = false;
 
+//boom here it is 
+
 void setup() {
     Serial.begin(9600);
     Serial.println("Initialising Robot Arm");
