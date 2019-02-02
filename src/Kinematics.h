@@ -1,5 +1,5 @@
-#ifndef Kinematics_H
-#define Kinematics_H
+#ifndef KINEMATICS_H
+#define KINEMATICS_H
 
 #include "DHParam.h"
 
