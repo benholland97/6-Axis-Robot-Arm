@@ -113,13 +113,13 @@ private:
     float a[NUM_SERVOS];
 };
 
-class InputPosition {
+class FullPosition {
 public:
-    InputPosition() {
+    FullPosition() {
         null();
     }
 
-    InputPosition(const InputPosition& pIP): InputPosition() {
+    FullPosition(const FullPosition& pIP): FullPosition() {
         position = pIP.position;
         orientation = pIP.orientation;
         gripperDistance = pIP.gripperDistance;
@@ -127,14 +127,14 @@ public:
         tcpDeviation = pIP.tcpDeviation;
     }
 
-    InputPosition(const Point& pPosition, const Rotation& pOrientation, const float pGripperDistance) {
+    FullPosition(const Point& pPosition, const Rotation& pOrientation, const float pGripperDistance) {
         position = pPosition;
         orientation = pOrientation;
         gripperDistance = pGripperDistance;
         tcpDeviation.null();
         angles.null();
     };
-    InputPosition(const Point& pPosition, const Rotation& pOrientation, const float pGripperDistance, const JointAngles& pAngles, const Point& pTcpDeviation) {
+    FullPosition(const Point& pPosition, const Rotation& pOrientation, const float pGripperDistance, const JointAngles& pAngles, const Point& pTcpDeviation) {
         position = pPosition;
         orientation = pOrientation;
         gripperDistance = pGripperDistance;
