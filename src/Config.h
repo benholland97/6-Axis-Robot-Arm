@@ -76,4 +76,20 @@
 
 //------SERIAL_RX--------
 #define NUM_CHARS   32
+
+//------MATRIX VALUES-----------
+#define NUM_MATRIX_ROWS    4
+#define NUM_MATRIX_COLUMNS    4
+
+//----------HARDWARE CONSTANTS (mm)---------------
+#define SHOULDER_HEIGHT  100
+#define SHOULDER_LENGTH  35
+#define HUMERUS_LENGTH  120
+#define FOREARM_LENGTH  100
+#define WRIST_LENGTH    55
+
+//----------SOFTWARE CONSTANTS (mm)---------------
+#define FLOAT_PRECISION 0.00000001
+#define EPSILON         0.5
+
 #endif

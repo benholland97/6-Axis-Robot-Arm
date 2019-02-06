@@ -122,43 +122,41 @@ public:
     FullPosition(const FullPosition& pIP): FullPosition() {
         position = pIP.position;
         orientation = pIP.orientation;
-        gripperDistance = pIP.gripperDistance;
         angles = pIP.angles;
-        tcpDeviation = pIP.tcpDeviation;
     }
 
-    FullPosition(const Point& pPosition, const Rotation& pOrientation, const float pGripperDistance) {
+    FullPosition(const Point& pPosition, const Rotation& pOrientation) {
         position = pPosition;
         orientation = pOrientation;
-        gripperDistance = pGripperDistance;
-        tcpDeviation.null();
         angles.null();
     };
-    FullPosition(const Point& pPosition, const Rotation& pOrientation, const float pGripperDistance, const JointAngles& pAngles, const Point& pTcpDeviation) {
-        position = pPosition;
-        orientation = pOrientation;
-        gripperDistance = pGripperDistance;
+    FullPosition(const JointAngles& pAngles) {
+        position.null();
+        orientation.null();
         angles = pAngles;
-        tcpDeviation = pTcpDeviation;
     };
 
     void null() {
         orientation.null();
         position.null();
-        gripperDistance = 0.0;
+        // gripperDistance = 0.0;
         angles.null();
-        tcpDeviation.null();
+        // tcpDeviation.null();
     }
 
     bool isNull() {
         return position.isNull();
     }
 
-private:
+    bool anglesSet() {
+        return angles.isNull();
+    }
+
+// private:
     Point position;
     Rotation orientation;
-    float gripperDistance;
-    Point tcpDeviation;
+    // float gripperDistance;
+    // Point tcpDeviation;
     JointAngles angles;
 };
 
