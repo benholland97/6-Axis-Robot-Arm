@@ -5,6 +5,7 @@
     },
     "files.associations": {
         "serstream": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "algorithm": "cpp"
     }
 }

@@ -1,6 +1,7 @@
 #ifndef POSITIONS_H
 #define POSITIONS_H
 #include "Config.h"
+#include "Arduino.h"
 
 class Point {
 public:
@@ -10,6 +11,8 @@ public:
     Point(float pX, float pY, float pZ):x(pX),y(pY),z(pZ){};
     
     void setNewPoint(float pX, float pY, float pZ);
+
+    void printContents();
 
     void null();
 
@@ -45,6 +48,7 @@ public:
 class Rotation: public Point {
     public:
 		Rotation () : Point (0,0,0){};
+
 		Rotation(float pX,float pY, float pZ): Point(pX,pY,pZ) {
 			x = pX;
 			y = pY;
@@ -56,12 +60,20 @@ class Rotation: public Point {
 			y= r.y;
 			z= r.z;
 		};
+
+        void printContents();
+
 };
 
 class JointAngles {
 public:
     JointAngles(){
         null();
+    }
+
+    JointAngles(float *pAngles) {
+        for (int i = 0;i<NUM_SERVOS;++i)
+			a[i] = pAngles[i]*M_PI / 180.0;
     }
 
     JointAngles(const JointAngles& pJA) {
@@ -109,6 +121,8 @@ public:
 				return false;
 		return true;
 	}
+
+    void printContents();
 private:
     float a[NUM_SERVOS];
 };
@@ -151,6 +165,8 @@ public:
     bool anglesSet() {
         return angles.isNull();
     }
+
+    void printContents();
 
 // private:
     Point position;

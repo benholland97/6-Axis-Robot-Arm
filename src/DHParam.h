@@ -6,6 +6,7 @@
 
 #include "Config.h"
 #include "Positions.h"
+#include "Arduino.h"
 
 class DHParam{
 public:
@@ -29,6 +30,9 @@ private:
 
 class TransMatrix {
 public:
+
+    friend std::ostream& operator<< (std::ostream &out, const TransMatrix &transMatrix);
+
 	TransMatrix(float pTheta, DHParam pDH);
 
 	TransMatrix(FullPosition pFP);
@@ -39,6 +43,7 @@ public:
 
 	void init(FullPosition pFP);
 
+	//TODO: Need to fix
 	TransMatrix& operator*= (const TransMatrix& rhs) {
 		float tNew [NUM_MATRIX_ROWS*NUM_MATRIX_COLUMNS];
 		for(int i=0; i<NUM_MATRIX_ROWS; ++i) {
@@ -48,9 +53,26 @@ public:
 				}
 			}
 		}
-		std::copy(tNew, tNew+(NUM_MATRIX_COLUMNS*NUM_MATRIX_ROWS), t);
+		// std::copy(tNew, tNew+(NUM_MATRIX_COLUMNS*NUM_MATRIX_ROWS), t);
+		for(int i=0; i<NUM_MATRIX_ROWS*NUM_MATRIX_COLUMNS; ++i) {
+			t[i] = tNew[i];
+		}
 		// t = tNew;
 		return *this;
+	}
+
+	TransMatrix operator* (const TransMatrix& rhs) {
+		TransMatrix newTM = TransMatrix(0.0,DHParam(0,0,0));
+		newTM.clear();
+		// float tNew [NUM_MATRIX_ROWS*NUM_MATRIX_COLUMNS];
+		for(int i=0; i<NUM_MATRIX_ROWS; ++i) {
+			for(int j=0; j<NUM_MATRIX_COLUMNS; ++j) {
+				for(int k=0; k<NUM_MATRIX_COLUMNS; ++k) {
+					newTM.t[i*NUM_MATRIX_COLUMNS +j] += t[i*NUM_MATRIX_COLUMNS +k] * rhs[k*NUM_MATRIX_COLUMNS + j];
+				}
+			}
+		}
+		return newTM;
 	}
 
 	TransMatrix& operator= (const TransMatrix& rhs) {
@@ -60,7 +82,7 @@ public:
 		return *this;
 	}
 
-	TransMatrix& multiply(int numRows, int numColumns, float* rhs);
+	TransMatrix multiply(int numRows, int numColumns, float* rhs);
 
 	float& operator[](int idx) {
 		if ((idx >= 0) || ( idx < NUM_MATRIX_COLUMNS*NUM_MATRIX_ROWS))
@@ -77,10 +99,27 @@ public:
 
 	TransMatrix& inverse();
 
+	void printContent();
+
+	void dummy() {
+		clear();
+		t[0] = -1;
+		t[3] = 190;
+		t[5] = 1;
+		t[6] = 1;
+		t[9] = 1;
+		t[11] = 220;
+		t[15] = 1;
+	}
+	void clear();
+	
+	static void calcRotationMatrix(float x, float y, float z, TransMatrix& m);
+
+	
 private:
 	void calcGeneral();
 	void calcHomogenous(FullPosition pos);
-	float a, b, c, d;
+	float theta, alpha, r, d;
 	float t [NUM_MATRIX_ROWS*NUM_MATRIX_COLUMNS];
 };
 
