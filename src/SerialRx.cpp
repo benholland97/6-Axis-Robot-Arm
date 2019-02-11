@@ -9,7 +9,7 @@ bool SerialRX::recv(float *a) {
     if (newData == true) {
         strcpy(tempChars, receivedChars);
         parseData(a);
-        showParsedData(a);
+        // showParsedData(a);
         newData = false;
         return true;
     }
@@ -25,7 +25,6 @@ void SerialRX::recvWithStartEndMarkers() {
 
     while (Serial.available() > 0 && newData == false) {
         rc = Serial.read();
-
         if (recvInProgress == true) {
             if (rc != endMarker) {
                 receivedChars[ndx] = rc;
@@ -63,14 +62,14 @@ void SerialRX::parseData(float *a) {
     a[4] = atof(strtokIndx);     
     strtokIndx = strtok(NULL, ",");
     a[5] = atof(strtokIndx);    
-    strtokIndx = strtok(NULL, ",");
-    a[6] = atof(strtokIndx);     
+    // strtokIndx = strtok(NULL, ",");
+    // a[6] = atof(strtokIndx);     
 }
 
 void SerialRX::showParsedData(float *a) {
     for(int i=0; i<NUM_SERVOS; ++i) {
         Serial.print(a[i]);
-        Serial.print("\t\t\t");
+        Serial.print("\t");
     }
     Serial.print("\n");
 }

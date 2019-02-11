@@ -52,18 +52,18 @@ void Point::setNewPoint(float pX, float pY,float pZ) {
 
 void JointAngles::printContents() {
 	Serial.print("Angles : [ ");
-	Serial.print(a[0]);
-	Serial.print("\t");
-	Serial.print(a[1]);
-	Serial.print("\t");
-	Serial.print(a[2]);
-	Serial.print("\t");
-	Serial.print(a[3]);
-	Serial.print("\t");
-	Serial.print(a[4]);
-	Serial.print("\t");
-	Serial.print(a[5]);
-	Serial.print("\t]");
+	Serial.print(a[0]*180/M_PI);
+	Serial.print(",\t");
+	Serial.print(a[1]*180/M_PI);
+	Serial.print(",\t");
+	Serial.print(a[2]*180/M_PI);
+	Serial.print(",\t");
+	Serial.print(a[3]*180/M_PI);
+	Serial.print(",\t");
+	Serial.print(a[4]*180/M_PI);
+	Serial.print(",\t");
+	Serial.print(a[5]*180/M_PI);
+	Serial.print(",\t]");
 }
 
 void FullPosition::printContents() {
@@ -85,4 +85,5 @@ void FullPosition::printContents() {
 	// orientation.printContents();
 	Serial.print("\n Joint Angles: ");
 	angles.printContents();
+	Serial.print("\n");
 }

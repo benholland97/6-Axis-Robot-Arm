@@ -9,13 +9,10 @@ void Kinematics::setup() {
     DHParams[3] = DHParam(toRadians(90),    0,                    FOREARM_LENGTH);
     DHParams[4] = DHParam(toRadians(-90),   0,                    0);
     DHParams[5] = DHParam(0,                0,                    WRIST_LENGTH);
-
-    // TransMatrices[0] = TransMatrix()
-
 }
 
 bool Kinematics::calcForwardKinematics(FullPosition& pos) {
- 
+    Serial.println("Calculating forward kinematics");
     TransMatrix T01 = TransMatrix(pos.angles[0],DHParams[0]);
     TransMatrix T12 = TransMatrix(-toRadians(90)+pos.angles[1],DHParams[1]);
     TransMatrix T23 = TransMatrix(pos.angles[2],DHParams[2]);
@@ -39,15 +36,6 @@ bool Kinematics::calcForwardKinematics(FullPosition& pos) {
     pos.orientation[0] =  atan2(T06[2*N+1],T06[2*N+2]);
     pos.orientation[1] =  atan2(-T06[2*N+0],sqrt(T06[0*N+0]*T06[0*N+0] + T06[1*N+0]*T06[1*N+0]));
     pos.orientation[2] =  atan2(T06[1*N+0],T06[0*N+0]);
-    int n = N;
-    // // float x,y,z;
-    // pos.orientation[1] = atan2(sqrt(T06[2*n+0]*T06[2*n +0] + T06[2*n+1]*T06[2*n +1]),T06[2*n+2]);
-    // float o = pos.orientation[1];
-    // pos.orientation[2] = atan2(T06[1*n+2]/sin(o),T06[0*n+2]/sin(o));
-    // pos.orientation[0] = atan2(T06[2*n+1]/sin(o),-T06[2*n+0]/sin(o));
-    // pos.orientation[0] = x;
-    // pos.orientation[1] = y;
-    // pos.orientation[2] = z;
 
     return true;
 }
@@ -74,7 +62,7 @@ bool Kinematics::calcInverseKinematics(FullPosition& pos) {
     // float wcp_z = pos.position.z - WRIST_LENGTH * T06[2*N + 2]; 
     Point wcp = Point(WCP[0],WCP[1],WCP[2]);
     // Serial.println("\nWrist Center Point :");
-    WCP.printContent();
+    // WCP.printContent();
     //TODO: Add second angle 0 solution  - pi + atan2(wcp.y,wcp.x)
     pos.angles[0] = atan2(wcp[1],wcp[0]);
     // pos.printContents();
@@ -128,6 +116,19 @@ bool Kinematics::calcInverseKinematics(FullPosition& pos) {
         pos.angles[3] = atan2(R36_12/sinT4,R36_02/sinT4);
         pos.angles[5] = atan2(R36_21/sinT4,-R36_20/sinT4);
     }
+
+    if(fabs(pos.angles[5]) == M_PI) {
+        pos.angles[5] += pos.angles[5] > 0? -M_PI:M_PI;
+    }
+    if(fabs(pos.angles[3]) == M_PI) {
+        pos.angles[3] += pos.angles[3] > 0? -M_PI:M_PI;
+    }
+    // JointAngles newJA = JointAngles(pos.angles);
+    // Serial.println("\nForward kin gives angles: ");
+    // testFP.printContents();
+    
+
+
 
     // //c2 = (Wx^2 + Wy^2 + Wz^2 - a1^2 - d3^2) / 2*a1*d3 
     // float c2 = (pow(wcp.x,2) + pow(wcp.y,2) + pow(wcp.z,2) - pow(DHParams[1].getR(),2) - pow(DHParams[3].getD(),2)

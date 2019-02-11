@@ -7,28 +7,30 @@
 #define NUM_SERVOS  6
 
 #define MG996R_MAX_ANGLE 120
+#define MG996R_MAX_ANGLE_2 60
 #define MG90S_MAX_ANGLE 180
+#define MG90S_MAX_ANGLE_2 90
 #define MG90S_MIN_ANGLE 0
 #define MG996R_MIN_ANGLE 0
 
 //Hip
-#define	PIN_SERVO0	3
+#define SERVO0_OFFSET   -15
 #define SERVO0MIN  95 // this is the 'minimum' pulse length count (out of 4096)
 #define SERVO0MAX  484
 
 //Waist
-#define	PIN_SERVO1	5
+#define SERVO1_OFFSET   35
 #define SERVO1MIN  95 
 #define SERVO1MAX  380
 
 //Shoulder
-#define	PIN_SERVO2	6
+#define SERVO2_OFFSET   38
 #define SERVO2MIN  95 
 #define SERVO2MAX  460
 
 //Elbow
-#define MG90S_ELB_MIN_ANGLE 30
-#define MG90S_ELB_MAX_ANGLE 120
+#define MG90S_ELB_MIN_ANGLE -45
+#define MG90S_ELB_MAX_ANGLE 45
 #define	PIN_SERVO3	9
 #define SERVO3MIN  165 
 #define SERVO3MAX  375

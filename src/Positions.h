@@ -122,9 +122,17 @@ public:
 		return true;
 	}
 
+    float* getAnglesDeg() {
+        for(int i=0; i<NUM_SERVOS; ++i) {
+            a_deg[i] = a[i]*180 / M_PI;
+        }
+        return a_deg;
+    };
+    
     void printContents();
 private:
     float a[NUM_SERVOS];
+    float a_deg[NUM_SERVOS];
 };
 
 class FullPosition {
