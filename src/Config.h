@@ -93,6 +93,6 @@
 
 //----------SOFTWARE CONSTANTS (mm)---------------
 #define FLOAT_PRECISION 0.00000001
-#define EPSILON         0.5
+#define EPSILON         0.2
 
 #endif

@@ -48,7 +48,7 @@ public:
 class Rotation: public Point {
     public:
 		Rotation () : Point (0,0,0){};
-
+        //Roll, Pitch, Yaw
 		Rotation(float pX,float pY, float pZ): Point(pX,pY,pZ) {
 			x = pX;
 			y = pY;

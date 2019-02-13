@@ -19,6 +19,23 @@ void DHParam::init(const float pAlpha, const float pR, const float pD) {
         sa = sin(_alpha);
 };
 
+void DHParam::printContent() {
+	Serial.print("Alpha: ");
+	Serial.print(_alpha);
+	Serial.print("\t");
+	Serial.print("R: ");
+	Serial.print(_r);
+	Serial.print("\t");
+	Serial.print("D: ");
+	Serial.print(_d);
+	Serial.print("\n");
+}
+
+TransMatrix::TransMatrix() {
+	init(0,DHParam());
+	clear();
+}
+
 
 TransMatrix::TransMatrix(FullPosition pFP) {
 	init(pFP);
@@ -161,8 +178,12 @@ TransMatrix& TransMatrix::inverse() {
 	tNew[3*N + 1] = 0.0;
 	tNew[3*N + 2] = 0.0;
 	tNew[3*N + 3] = 1.0;
+
+	for(int i=0; i<NUM_MATRIX_ROWS*NUM_MATRIX_COLUMNS; ++i) {
+		t[i] = tNew[i];
+	}
 		
-	std::copy(tNew, tNew+(N*NUM_MATRIX_ROWS), t);
+	// std::copy(tNew, tNew+(N*NUM_MATRIX_ROWS), t);
 	
 	return *this;
 }

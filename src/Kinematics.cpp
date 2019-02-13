@@ -12,6 +12,7 @@ void Kinematics::setup() {
 }
 
 bool Kinematics::calcForwardKinematics(FullPosition& pos) {
+    setup();
     Serial.println("Calculating forward kinematics");
     TransMatrix T01 = TransMatrix(pos.angles[0],DHParams[0]);
     TransMatrix T12 = TransMatrix(-toRadians(90)+pos.angles[1],DHParams[1]);
@@ -20,9 +21,22 @@ bool Kinematics::calcForwardKinematics(FullPosition& pos) {
     TransMatrix T45 = TransMatrix(pos.angles[4],DHParams[4]);
     TransMatrix T56 = TransMatrix(pos.angles[5],DHParams[5]);
     
-    TransMatrix T06 = T01 * T12 * T23 * T34 * T45 * T56;
-    // Serial.print("Forward t06");
-    // T06.printContent();
+    TransMatrix T06 = TransMatrix();
+    // T01.printContent();
+    // T12.printContent();
+    // T23.printContent();
+    // T34.printContent();
+    // T45.printContent();
+    // T56.printContent();
+
+    T01 = T01 * T12 * T23;
+    T34 = T34 * T45 * T56;
+    T06 = T01 * T34;
+    // T01.printContent();
+    // T34.printContent();
+
+    // T06 = T01 * T12 * T23 * T34 * T45 * T56;
+    // // Serial.print("Forward t06");
     TransMatrix corRot = T06;
     TransMatrix::calcRotationMatrix(toRadians(-90),toRadians(-90),toRadians(-90),corRot);
 
@@ -37,10 +51,19 @@ bool Kinematics::calcForwardKinematics(FullPosition& pos) {
     pos.orientation[1] =  atan2(-T06[2*N+0],sqrt(T06[0*N+0]*T06[0*N+0] + T06[1*N+0]*T06[1*N+0]));
     pos.orientation[2] =  atan2(T06[1*N+0],T06[0*N+0]);
 
+    // //Temp rotation fix
+    // for(int i=0; i<3; ++i) {
+    //     float d = fabs(pos.orientation[i]) - M_PI;
+    //     if((d < EPSILON) && (d > 0)) {
+    //         pos.orientation[i] += pos.orientation[i] > 0? -M_PI:M_PI;
+    //     }
+    // }
+
     return true;
 }
 
 bool Kinematics::calcInverseKinematics(FullPosition& pos) {
+    setup();
     //compute full homogenous transform matrix inc. rotation matrix
     // Serial.println("\nInput Tool Full Position :");
     // pos.printContents(); 
@@ -117,12 +140,25 @@ bool Kinematics::calcInverseKinematics(FullPosition& pos) {
         pos.angles[5] = atan2(R36_21/sinT4,-R36_20/sinT4);
     }
 
-    if(fabs(pos.angles[5]) == M_PI) {
-        pos.angles[5] += pos.angles[5] > 0? -M_PI:M_PI;
+    //temp angles pi error fix
+    for(int i=3; i<6; ++i) {
+        float d = fabs(pos.angles[i]) - M_PI;
+        if((d < EPSILON) && (d > -EPSILON)) {
+            Serial.print("Fixing pi error on angle");
+            Serial.println(i);
+            pos.angles[i] += pos.angles[i] > 0? -M_PI:M_PI;
+        }
     }
-    if(fabs(pos.angles[3]) == M_PI) {
-        pos.angles[3] += pos.angles[3] > 0? -M_PI:M_PI;
-    }
+    // if(fabs(pos.angles[5]) - M_PI < EPSILON) {
+    //     Serial.println("Pi deg error on angle 5");
+    //     pos.angles[5] += pos.angles[5] > 0? -M_PI:M_PI;
+    // }
+    // if(fabs(pos.angles[3]) - M_PI < EPSILON) {
+    //     Serial.println("Pi deg error on angle 5");
+    //     pos.angles[3] += pos.angles[3] > 0? -M_PI:M_PI;
+    // }
+
+
     // JointAngles newJA = JointAngles(pos.angles);
     // Serial.println("\nForward kin gives angles: ");
     // testFP.printContents();

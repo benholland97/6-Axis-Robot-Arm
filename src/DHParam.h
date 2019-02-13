@@ -2,7 +2,7 @@
 #define DHPARAM_H
 
 #include <math.h>
-#include <algorithm>
+// #include <algorithm>
 
 #include "Config.h"
 #include "Positions.h"
@@ -20,6 +20,8 @@ public:
 	const float sinalpha() const { return sa; };
 	const float cosalpha() const { return ca; };
 
+	void printContent();
+
 private:
 	float _r;
 	float _d;
@@ -31,7 +33,8 @@ private:
 class TransMatrix {
 public:
 
-    friend std::ostream& operator<< (std::ostream &out, const TransMatrix &transMatrix);
+    // friend std::ostream& operator<< (std::ostream &out, const TransMatrix &transMatrix);
+	TransMatrix();
 
 	TransMatrix(float pTheta, DHParam pDH);
 

@@ -22,9 +22,9 @@ void setup() {
     kin = new  Kinematics();
     sRX = new SerialRX();
     fp = FullPosition();
-    delay(50);
-    float jAngles[6] = {0,0,0,0,0,0};
-    FullPosition posFP = FullPosition(Point(190,0,220),Rotation(Kinematics::toRadians(0),Kinematics::toRadians(0),Kinematics::toRadians(0)));
+    delay(200);
+    float jAngles[6] = {45,65,0,0,0,0};
+    // FullPosition posFP = FullPosition(Point(209,0,10),Rotation(Kinematics::toRadians(0),Kinematics::toRadians(65),Kinematics::toRadians(0)));
     // FullPosition jointsFP = FullPosition(JointAngles(jAngles));
 
     // jointsFP.printContents();
@@ -34,13 +34,18 @@ void setup() {
     // FullPosition testFP = FullPosition(posFP.angles);
     // kin->calcForwardKinematics(testFP);
 
-    Serial.println("Forward kin - target:");
-    // jointsFP.printContents();
-    Serial.print("\n");
-
-    // Serial.println("Inv kin - result:");
+    // Serial.println("Inv kin result:");
     // posFP.printContents();
+    // Serial.print("\n");
+
+    // Serial.println("Plugged back into forward k:");
+    // testFP.printContents();
     // Serial.print("\n\n");
+
+    // Serial.println("forward k:");
+    // jointsFP.printContents();
+    // Serial.print("\n\n");
+
 
     // if(sc->mechLimitsCheck(posFP.angles.getA())) {
         // Serial.println("Angle set go go go");
@@ -65,22 +70,22 @@ float* toRadians(int size, float* x) {
 
 void loop() {
     // sc->setAngles(Kinematics::toRadians(testAngles));
-    // if(sRX->recv(pos)) {
-    //     Serial.println("\nData received");
-    //     fp = FullPosition(Point(pos[0],pos[1],pos[2]),Rotation(Kinematics::toRadians(pos[3]),Kinematics::toRadians(pos[4]),Kinematics::toRadians(pos[5])));
-    //     kin->calcInverseKinematics(fp);
-    //     fp.printContents();
-    //     // if(sc->mechLimitsCheck(fp.angles.getAnglesDeg())) {
-    //         Serial.println("\nSetting new pos: \n");
-    //         fp.printContents();
-    //         sc->setAngles(fp.angles.getAnglesDeg());
-    //     // } else {
-    //     // Serial.println("\n Invalid position");
-    //     // }
-    //     // fp = FullPosition(pos);
-    //     // kin ->calcForwardKinematics(fp);
-    //     // fp.printContents();
-    // } 
+    if(sRX->recv(pos)) {
+        Serial.println("\nData received");
+        fp = FullPosition(Point(pos[0],pos[1],pos[2]),Rotation(Kinematics::toRadians(pos[3]),Kinematics::toRadians(pos[4]),Kinematics::toRadians(pos[5])));
+        kin->calcInverseKinematics(fp);
+        fp.printContents();
+        // if(sc->mechLimitsCheck(fp.angles.getAnglesDeg())) {
+            Serial.println("\nSetting new pos: \n");
+            fp.printContents();
+            sc->setAngles(fp.angles.getAnglesDeg());
+        // } else {
+        // Serial.println("\n Invalid position");
+        // }
+        // fp = FullPosition(pos);
+        // kin ->calcForwardKinematics(fp);
+        // fp.printContents();
+    } 
         
     delay(100);
 }
