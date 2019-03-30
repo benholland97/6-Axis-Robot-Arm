@@ -18,27 +18,46 @@ void ServoController::init(int x) {
 
 }
 
+bool ServoController::setAngles(float *pAngles) {
+    for(int i=0; i<NUM_SERVOS; ++i) {
+        if(!setAngle(pAngles[i],i)) {
+            Serial.print("Failure on servo:");
+            Serial.print(i);
+            Serial.print("\t Angle :");
+            Serial.println(pAngles[i]);
+            return false;
+        };
+    }
+    return true;
+}
+
 bool ServoController::setAngle(double angle, int servo) {
     if(boundsCheck(angle,servo)) {
         double pulselength;
         switch(servo) {
             case 0:
-                pulselength = map(angle,0,MG996R_MAX_ANGLE,SERVO0MIN, SERVO0MAX);
+                pulselength = map(angle+SERVO0_OFFSET,angle_limits_min[0],angle_limits_max[0],SERVO0MIN, SERVO0MAX);
                 break;
             case 1:
-                pulselength = map(angle,0,MG996R_MAX_ANGLE,SERVO1MIN, SERVO1MAX);
+                pulselength = map(-angle+SERVO1_OFFSET,angle_limits_min[1],angle_limits_max[1],SERVO1MIN, SERVO1MAX);
                 break;
             case 2:
-                pulselength = map(angle,0,MG996R_MAX_ANGLE,SERVO2MIN, SERVO2MAX);
+                pulselength = map(angle+SERVO2_OFFSET,angle_limits_min[2],angle_limits_max[2],SERVO2MIN, SERVO2MAX);
                 break;
-            case 3:
-                pulselength = map(angle,MG90S_ELB_MIN_ANGLE,MG90S_ELB_MAX_ANGLE,SERVO3MIN, SERVO3MAX);
+            case 3: {
+                // int iAngle = angle;
+                // if(iAngle == -90) {
+                //     angle = -80;
+                //     // Serial.println("Fixing -90 rot angle 3 issue");
+                // }
+                pulselength = map(angle+SERVO3_OFFSET,angle_limits_min[3],angle_limits_max[3],SERVO3MIN, SERVO3MAX);
                 break;
+            }
             case 4:
-                pulselength = map(angle,0,MG90S_MAX_ANGLE,SERVO4MIN, SERVO4MAX);
+                pulselength = map(angle,angle_limits_min[4],angle_limits_max[4],SERVO4MIN, SERVO4MAX);
                 break;
             case 5:
-                pulselength = map(angle,0,MG90S_MAX_ANGLE,SERVO5MIN, SERVO5MAX);
+                pulselength = map(angle+SERVO5_OFFSET,angle_limits_min[5],angle_limits_max[5],SERVO5MIN, SERVO5MAX);
                 break;
             default:
                 pulselength = -1;
@@ -74,10 +93,23 @@ bool ServoController::boundsCheck(double angle, int servo) {
     if(servo>numServos-1 || servo<0) {
         return false;
     }
-    if(angle>angle_limits_max[servo] || angle <angle_limits_min[servo]) {
+    int iAngle = angle;
+    if(iAngle > angle_limits_max[servo] || iAngle < angle_limits_min[servo]) {
         return false;
     }
     return true;
 }
 
+
+bool ServoController::mechLimitsCheck(float* pAngles) {
+    for(int i=0; i<NUM_SERVOS; ++i) {
+        if(!boundsCheck(pAngles[i],i)) {
+            Serial.println("\n");
+            Serial.println(pAngles[i]);
+            Serial.println(i);
+            return false;
+        }
+    }
+    return true;
+}
 

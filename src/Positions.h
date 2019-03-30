@@ -1,6 +1,7 @@
 #ifndef POSITIONS_H
 #define POSITIONS_H
 #include "Config.h"
+#include "Arduino.h"
 
 class Point {
 public:
@@ -10,6 +11,8 @@ public:
     Point(float pX, float pY, float pZ):x(pX),y(pY),z(pZ){};
     
     void setNewPoint(float pX, float pY, float pZ);
+
+    void printContents();
 
     void null();
 
@@ -45,6 +48,7 @@ public:
 class Rotation: public Point {
     public:
 		Rotation () : Point (0,0,0){};
+        //Roll, Pitch, Yaw
 		Rotation(float pX,float pY, float pZ): Point(pX,pY,pZ) {
 			x = pX;
 			y = pY;
@@ -56,6 +60,9 @@ class Rotation: public Point {
 			y= r.y;
 			z= r.z;
 		};
+
+        void printContents();
+
 };
 
 class JointAngles {
@@ -64,10 +71,20 @@ public:
         null();
     }
 
+    JointAngles(float *pAngles) {
+        for (int i = 0;i<NUM_SERVOS;++i)
+			a[i] = pAngles[i]*M_PI / 180.0;
+    }
+
     JointAngles(const JointAngles& pJA) {
 		for (int i = 0;i<NUM_SERVOS;++i)
 			a[i] = pJA.a[i];
 	}
+
+    void setAnglesRad(float *pA) {
+        for (int i = 0;i<NUM_SERVOS;++i)
+			a[i] = pA[i];
+    }
 
     void setDefaultPosition() {
         a[0] = 0.0;
@@ -98,6 +115,10 @@ public:
 		return dummy;
 	}
 
+
+
+
+
     void null() {
 		for (int i = 0;i<NUM_SERVOS;++i)
 			a[i] = 0.0;
@@ -109,56 +130,66 @@ public:
 				return false;
 		return true;
 	}
+
+    float* getAnglesDeg() {
+        for(int i=0; i<NUM_SERVOS; ++i) {
+            a_deg[i] = a[i]*180 / M_PI;
+        }
+        return a_deg;
+    };
+    
+    void printContents();
 private:
     float a[NUM_SERVOS];
+    float a_deg[NUM_SERVOS];
 };
 
-class InputPosition {
+class FullPosition {
 public:
-    InputPosition() {
+    FullPosition() {
         null();
     }
 
-    InputPosition(const InputPosition& pIP): InputPosition() {
+    FullPosition(const FullPosition& pIP): FullPosition() {
         position = pIP.position;
         orientation = pIP.orientation;
-        gripperDistance = pIP.gripperDistance;
         angles = pIP.angles;
-        tcpDeviation = pIP.tcpDeviation;
     }
 
-    InputPosition(const Point& pPosition, const Rotation& pOrientation, const float pGripperDistance) {
+    FullPosition(const Point& pPosition, const Rotation& pOrientation) {
         position = pPosition;
         orientation = pOrientation;
-        gripperDistance = pGripperDistance;
-        tcpDeviation.null();
         angles.null();
     };
-    InputPosition(const Point& pPosition, const Rotation& pOrientation, const float pGripperDistance, const JointAngles& pAngles, const Point& pTcpDeviation) {
-        position = pPosition;
-        orientation = pOrientation;
-        gripperDistance = pGripperDistance;
+    FullPosition(const JointAngles& pAngles) {
+        position.null();
+        orientation.null();
         angles = pAngles;
-        tcpDeviation = pTcpDeviation;
     };
 
     void null() {
         orientation.null();
         position.null();
-        gripperDistance = 0.0;
+        // gripperDistance = 0.0;
         angles.null();
-        tcpDeviation.null();
+        // tcpDeviation.null();
     }
 
     bool isNull() {
         return position.isNull();
     }
 
-private:
+    bool anglesSet() {
+        return angles.isNull();
+    }
+
+    void printContents();
+
+// private:
     Point position;
     Rotation orientation;
-    float gripperDistance;
-    Point tcpDeviation;
+    // float gripperDistance;
+    // Point tcpDeviation;
     JointAngles angles;
 };
 

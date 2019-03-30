@@ -2,20 +2,32 @@
 #define SERIALRX_H
 
 #include "Config.h"
-#include <Arduino.h> 
+#include <Arduino.h>
+#include <HardwareSerial.h> 
 
 
 
 class SerialRX {
 public:
-    SerialRX();
+    SerialRX(Stream& _s):stream(_s) {
+        newData = false;
+    }
 
     bool recv(float *a);
 
+    bool recv2(float *a);
+
+    void flushBuffer();
+
+
+
 private:
+    Stream &stream;
+    float recBuffer[NUM_SERVOS];
+
     void recvWithStartEndMarkers();
-    void parseData(float *a);
-    void showParsedData(float *a);
+    void parseData(float* a);
+    void showParsedData(float* a);
 
     // static const byte numChars = 32;
     char receivedChars[NUM_CHARS];
