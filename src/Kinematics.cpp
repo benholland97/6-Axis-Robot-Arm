@@ -13,7 +13,8 @@ void Kinematics::setup() {
 
 bool Kinematics::calcForwardKinematics(FullPosition& pos) {
     setup();
-    Serial.println("Calculating forward kinematics");
+    // Serial.println("Calculating forward kinematics");
+    // pos.printContents();
     TransMatrix T01 = TransMatrix(pos.angles[0],DHParams[0]);
     TransMatrix T12 = TransMatrix(-toRadians(90)+pos.angles[1],DHParams[1]);
     TransMatrix T23 = TransMatrix(pos.angles[2],DHParams[2]);
@@ -46,15 +47,45 @@ bool Kinematics::calcForwardKinematics(FullPosition& pos) {
     pos.position[1] = T06[1*N + 3];
     pos.position[2] = T06[2*N + 3];
 
-    //extract rotation from homogeneous transform matrix
+    // extract rotation from homogeneous transform matrix
+    //walter method
+    //roll - alpha
     pos.orientation[0] =  atan2(T06[2*N+1],T06[2*N+2]);
+    //pitch - beta
     pos.orientation[1] =  atan2(-T06[2*N+0],sqrt(T06[0*N+0]*T06[0*N+0] + T06[1*N+0]*T06[1*N+0]));
+    float beta = pos.orientation[1];
+    //yaw - gamma
     pos.orientation[2] =  atan2(T06[1*N+0],T06[0*N+0]);
+
+    if(fabs(beta) == M_PI_2) {
+        bool sign = beta > 0? 1:-1;
+        pos.orientation[0] = 0;
+        pos.orientation[2] = sign * atan2(T06[0*N+1],T06[1*N+1]);
+    }
+
+    //ar2 method
+
+    // // y rotation - phi - pitch
+    // pos.orientation[1] =  atan2(-T06[2*N+0],sqrt(T06[0*N+0]*T06[0*N+0] + T06[1*N+0]*T06[1*N+0]));
+    // float cosPhi = cos(pos.orientation[1]);
+    // //x rotation - psi - roll 
+    // pos.orientation[0] =  atan2(T06[2*N+1]/cosPhi,T06[2*N+2]/cosPhi);
+    // //z rotation - theta - yaw 
+    // pos.orientation[2] = atan2(T06[1*N+0]/cosPhi,T06[0*N+0]/cosPhi);
+
+    //https://www.mecademic.com/resources/Euler-angles/Euler-angles
+    // // y rotation - phi - pitch
+    // pos.orientation[1] =  asin(T06[0*N+2]);
+    // //x rotation - psi - roll 
+    // pos.orientation[0] =  atan2(-T06[1*N+2],T06[2*N+2]);
+    // //z rotation - theta - yaw 
+    // pos.orientation[2] = atan2(-T06[0*N+1],T06[0*N+0]);
+
 
     // //Temp rotation fix
     // for(int i=0; i<3; ++i) {
     //     float d = fabs(pos.orientation[i]) - M_PI;
-    //     if((d < EPSILON) && (d > 0)) {
+    //     if((d < EPSILON) && (d > -EPSILON)) {
     //         pos.orientation[i] += pos.orientation[i] > 0? -M_PI:M_PI;
     //     }
     // }
@@ -68,9 +99,10 @@ bool Kinematics::calcInverseKinematics(FullPosition& pos) {
     // Serial.println("\nInput Tool Full Position :");
     // pos.printContents(); 
     // Serial.println("Inverse t06");
+    float newAngles[NUM_SERVOS];
+
     //calc angle 0
     TransMatrix T06 = TransMatrix(pos);
-    // T06.printContent();
 
     TransMatrix invCorRot = T06;
     TransMatrix::calcRotationMatrix(toRadians(90),toRadians(90),toRadians(90),invCorRot);
@@ -78,6 +110,8 @@ bool Kinematics::calcInverseKinematics(FullPosition& pos) {
     // invCorRot.printContent();
     T06 = T06 * invCorRot;
     //calc WCP - equal to translation in -z axis by hand length
+    // T06.printContent();
+
     float TCP_to_WCP[4] = {0,0,-WRIST_LENGTH,1};
     TransMatrix WCP = T06.multiply(4,1,TCP_to_WCP);
     // float wcp_x = pos.position.x - WRIST_LENGTH * T06[0*N + 2];
@@ -87,7 +121,7 @@ bool Kinematics::calcInverseKinematics(FullPosition& pos) {
     // Serial.println("\nWrist Center Point :");
     // WCP.printContent();
     //TODO: Add second angle 0 solution  - pi + atan2(wcp.y,wcp.x)
-    pos.angles[0] = atan2(wcp[1],wcp[0]);
+    newAngles[0] = atan2(wcp[1],wcp[0]);
     // pos.printContents();
     // Serial.println("\n");
 
@@ -104,104 +138,83 @@ bool Kinematics::calcInverseKinematics(FullPosition& pos) {
     float gamma = acos((c*c - a*a - b*b)/(-2*a*b));
     float delta = atan2(zJ1ToWCP,lenBaseToWCPTop);
     //assumed elbow up orientation
-    pos.angles[1] = M_PI_2 - (alpha + delta);
-    pos.angles[2] = M_PI_2 - gamma;
+    newAngles[1] = M_PI_2 - (alpha + delta);
+    newAngles[2] = M_PI_2 - gamma;
 
     //angles 3,4,5
     //avoid singularity x=0 y=0
-    if(fabs(wcp.x)< FLOAT_PRECISION) {
-        wcp.x += EPSILON;
-    }   
-    if(fabs(wcp.y)< FLOAT_PRECISION) {
-        wcp.y += EPSILON;
-    }
+    // if(fabs(wcp.x)< FLOAT_PRECISION) {
+    //     wcp.x += EPSILON;
+    // }   
+    // if(fabs(wcp.y)< FLOAT_PRECISION) {
+    //     wcp.y += EPSILON;
+    // }
 
-    TransMatrix T01 = TransMatrix(pos.angles[0],DHParams[0]);
-    TransMatrix T12 = TransMatrix(-toRadians(90)+pos.angles[1],DHParams[1]);
-    TransMatrix T23 = TransMatrix(pos.angles[2],DHParams[2]);
+    TransMatrix T01 = TransMatrix(newAngles[0],DHParams[0]);
+    TransMatrix T12 = TransMatrix(-toRadians(90)+newAngles[1],DHParams[1]);
+    TransMatrix T23 = TransMatrix(newAngles[2],DHParams[2]);
     TransMatrix T03 = T01*T12*T23;
-    TransMatrix T03_inv = T03.inverse();
+    // TransMatrix T03_inv = T03.inverse();
+    // TransMatrix T03_inv = T03.rotInverse();
+    TransMatrix T03_inv = T03.transpose();
 
     TransMatrix T36 = T03_inv * T06;
     float R36_22 = T36[2*N + 2];
+    float R36_01 = T36[0*N + 1];
     float R36_12 = T36[1*N + 2];
     float R36_02 = T36[0*N + 2];
     float R36_21 = T36[2*N + 1];
     float R36_20 = T36[2*N + 0];
 
-    pos.angles[4] = acos(R36_22);
-    float sinT4 = sin(pos.angles[4]);
+    if ((fabs(R36_22) > 1.0) && (fabs(R36_22) < (1.0+FLOAT_PRECISION))) {
+		R36_22 = (R36_22>0)?1.0:-1.0;
+	}
+
+	if ((fabs(R36_01) > 1.0) && (fabs(R36_01) < (1.0+FLOAT_PRECISION))) {
+		R36_01 = (R36_01>0)?1.0:-1.0;
+	}
+
+    newAngles[4] = acos(R36_22);
+    float sinT4 = sin(newAngles[4]);
     //TODO: theta 4 = 0 gimbal lock solution
-    if(pos.angles[4] < FLOAT_PRECISION) {
-        pos.angles[3] = 0;
-        pos.angles[5] = asin(-T06[0*N + 1]) - pos.angles[3];
+    if(fabs(newAngles[4]) < FLOAT_PRECISION) {
+        Serial.println("Gimbal lock");
+        newAngles[3] = 0;
+        newAngles[5] = asin(-T06[0*N + 1]) - newAngles[3];
     } else {
-        pos.angles[3] = atan2(R36_12/sinT4,R36_02/sinT4);
-        pos.angles[5] = atan2(R36_21/sinT4,-R36_20/sinT4);
+        newAngles[3] = atan2(R36_12/sinT4,R36_02/sinT4);
+        newAngles[5] = atan2(R36_21/sinT4,-R36_20/sinT4);
     }
 
     //temp angles pi error fix
     for(int i=3; i<6; ++i) {
-        float d = fabs(pos.angles[i]) - M_PI;
+        float d = fabs(newAngles[i]) - M_PI;
         if((d < EPSILON) && (d > -EPSILON)) {
-            Serial.print("Fixing pi error on angle");
-            Serial.println(i);
-            pos.angles[i] += pos.angles[i] > 0? -M_PI:M_PI;
+            // Serial.print("Fixing pi error on angle");
+            // Serial.println(i);
+            newAngles[i] += newAngles[i] > 0? -M_PI:M_PI;
         }
     }
-    // if(fabs(pos.angles[5]) - M_PI < EPSILON) {
-    //     Serial.println("Pi deg error on angle 5");
-    //     pos.angles[5] += pos.angles[5] > 0? -M_PI:M_PI;
+    //check against forward kin 
+    // FullPosition tempPos = FullPosition(newAngles);
+    // calcForwardKinematics(tempPos);
+    // int errCount;
+    // for(int i=0; i<NUM_SERVOS; ++i) {
+    //     errCount += (newAngles[i] / tempPos.angles[i]);
+    //     Serial.print("Ik angle ");
+    //     Serial.print(i);
+    //     Serial.print("\t : \t");
+    //     Serial.println(newAngles[i]);
+    //     Serial.print("FK angle ");
+    //     Serial.print(i);
+    //     Serial.print("\t : \t");
+    //     Serial.println(tempPos.angles[i]);
     // }
-    // if(fabs(pos.angles[3]) - M_PI < EPSILON) {
-    //     Serial.println("Pi deg error on angle 5");
-    //     pos.angles[3] += pos.angles[3] > 0? -M_PI:M_PI;
-    // }
+    // Serial.print("Difference between inverse and forward kin:\t");
+    // Serial.println(errCount);
 
+    pos.angles.setAnglesRad(newAngles);
 
-    // JointAngles newJA = JointAngles(pos.angles);
-    // Serial.println("\nForward kin gives angles: ");
-    // testFP.printContents();
-    
-
-
-
-    // //c2 = (Wx^2 + Wy^2 + Wz^2 - a1^2 - d3^2) / 2*a1*d3 
-    // float c2 = (pow(wcp.x,2) + pow(wcp.y,2) + pow(wcp.z,2) - pow(DHParams[1].getR(),2) - pow(DHParams[3].getD(),2)
-    //     / 2*DHParams[1].getR()*DHParams[3].getD());
-    // float s2 = sqrt(1-pow(c2,2));
-    // pos.angles[2] = M_PI_2 + atan2(s2,c2);
-
-    // pos.printContents();
-
-    // float s1 = ((DHParams[1].getR()+DHParams[3].getD()*c2)*wcp.z - DHParams[3].getD()*s2*sqrt(pow(wcp.x,2) + pow(wcp.y,2)))
-    //     / pow(wcp.x,2) + pow(wcp.y,2) + pow(wcp.z,2);
-    // float c1 = ((DHParams[1].getR()+DHParams[3].getD()*c2)*sqrt(pow(wcp.x,2) + pow(wcp.y,2)) + DHParams[3].getD()*s2*wcp.z)
-    //     /  pow(wcp.x,2) + pow(wcp.y,2) + pow(wcp.z,2);
-    // pos.angles[1] = atan2(s1,c1);
-
-    // //inverse kinematics spherical wrist 3 angles
-
-
-    // TransMatrix T01 = TransMatrix(pos.angles[0],DHParams[0]);
-    // TransMatrix T12 = TransMatrix(pos.angles[1],DHParams[1]);
-    // TransMatrix T23 = TransMatrix(pos.angles[2],DHParams[2]);
-    // TransMatrix T03 = (T01*=T12*=T23);
-    // TransMatrix T36 = T03.inverse() *= T06;
-
-    // float R36_3x = T36[0*N + 2];
-    // float R36_3y = T36[1*N + 2];
-    // float R36_3z = T36[2*N + 2];
-
-    // pos.angles[4] = atan2(sqrt(pow(R36_3x,2)+pow(R36_3y,2)),R36_3z);
-    // if(pos.angles[4] > 0) {
-    //     pos.angles[3] = atan2(R36_3y,R36_3x);
-    //     pos.angles[5] = atan2(T36[2*N+1], -T36[2*N+0]); 
-    // } else {
-    //     pos.angles[3] = atan2(-R36_3y,-R36_3x);
-    //     pos.angles[4] *= -1;
-    //     pos.angles[5] = atan2(-T36[2*N+1], T36[2*N+0]); 
-    // }
 
     return true;
 }

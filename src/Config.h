@@ -6,10 +6,10 @@
 //------SERVOS--------
 #define NUM_SERVOS  6
 
-#define MG996R_MAX_ANGLE 120
-#define MG996R_MAX_ANGLE_2 60
+#define MG996R_MAX_ANGLE 160
+#define MG996R_MAX_ANGLE_2 MG996R_MAX_ANGLE/2
 #define MG90S_MAX_ANGLE 180
-#define MG90S_MAX_ANGLE_2 90
+#define MG90S_MAX_ANGLE_2 MG90S_MAX_ANGLE/2
 #define MG90S_MIN_ANGLE 0
 #define MG996R_MIN_ANGLE 0
 
@@ -19,29 +19,31 @@
 #define SERVO0MAX  484
 
 //Waist
-#define SERVO1_OFFSET   35
+#define SERVO1_OFFSET   50
 #define SERVO1MIN  95 
 #define SERVO1MAX  380
 
+
 //Shoulder
-#define SERVO2_OFFSET   38
+#define SERVO2_OFFSET   50
 #define SERVO2MIN  95 
 #define SERVO2MAX  460
 
 //Elbow
 #define MG90S_ELB_MIN_ANGLE -45
 #define MG90S_ELB_MAX_ANGLE 45
-#define	PIN_SERVO3	9
-#define SERVO3MIN  165 
-#define SERVO3MAX  375
+#define SERVO3_OFFSET   -15
+// #define SERVO3MIN  165 
+// #define SERVO3MAX  375
+#define SERVO3MIN  95 
+#define SERVO3MAX  460
 
 //Wrist
-#define	PIN_SERVO4	10
 #define SERVO4MIN  95 
 #define SERVO4MAX  440
 
 //Gripper-rotation
-#define	PIN_SERVO5	11
+#define SERVO5_OFFSET   -20
 #define SERVO5MIN  95 
 #define SERVO5MAX  484
 
@@ -77,7 +79,8 @@
 
 
 //------SERIAL_RX--------
-#define NUM_CHARS   32
+#define NUM_CHARS   64
+
 
 //------MATRIX VALUES-----------
 #define NUM_MATRIX_ROWS    4
@@ -89,10 +92,12 @@
 #define SHOULDER_OFFSET  35
 #define HUMERUS_LENGTH  120
 #define FOREARM_LENGTH  100
-#define WRIST_LENGTH    55
+// #define WRIST_LENGTH    55 //w/o hand
+#define WRIST_LENGTH    115 //w hand
+
 
 //----------SOFTWARE CONSTANTS (mm)---------------
-#define FLOAT_PRECISION 0.00000001
+#define FLOAT_PRECISION 0.00001
 #define EPSILON         0.2
 
 #endif

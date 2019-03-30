@@ -81,6 +81,11 @@ public:
 			a[i] = pJA.a[i];
 	}
 
+    void setAnglesRad(float *pA) {
+        for (int i = 0;i<NUM_SERVOS;++i)
+			a[i] = pA[i];
+    }
+
     void setDefaultPosition() {
         a[0] = 0.0;
         a[1] = 0.0;
@@ -109,6 +114,10 @@ public:
         static float dummy(0);
 		return dummy;
 	}
+
+
+
+
 
     void null() {
 		for (int i = 0;i<NUM_SERVOS;++i)

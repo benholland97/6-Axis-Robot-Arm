@@ -88,26 +88,50 @@ void TransMatrix::calcGeneral() {
 
 void TransMatrix::calcHomogenous(FullPosition pos) {
 	//Extract roll, pitch, yaw trig calculations
-	float sX = sin(pos.orientation[0]);
-    float cX = cos(pos.orientation[0]);
-    float sY = sin(pos.orientation[1]);
-    float cY = cos(pos.orientation[1]);    
-    float sZ= sin(pos.orientation[2]);
-    float cZ = cos(pos.orientation[2]);
+	float sA = sin(pos.orientation[0]);
+    float cA = cos(pos.orientation[0]);
+    float sB = sin(pos.orientation[1]);
+    float cB = cos(pos.orientation[1]);    
+    float sG= sin(pos.orientation[2]);
+    float cG = cos(pos.orientation[2]);
+
+	// //x' -> y' -> z'
+	// //row 0
+	// t[0*N+0] = cB*cG;
+	// t[0*N+1] = -cB*sG;
+	// t[0*N+2] = sB;
+	// t[0*N+3] = 0;
+	// //row 1
+	// t[1*N+0] = sA*sG + sA*sB*cG;
+	// t[1*N+1] = cA*cG - sA*sB*sG;
+	// t[1*N+2] = -sA*cB;
+	// t[1*N+3] = 0;
+	// //row 2
+	// t[2*N+0] = -sA*sG - cA*sB*cG;
+	// t[2*N+1] = sA*cG + cA*sB*sG;
+	// t[2*N+2] = cA*cB;
+	// t[2*N+3] = 0;
+	// //row 3
+	// t[3*N+0] = 0;
+	// t[3*N+1] = 0;
+	// t[3*N+2] = 0;
+	// t[3*N+3] = 1;
+
+	//walter
 	//row 0
-	t[0*N+0] = cZ*cY;
-	t[0*N+1] = cZ*sY*sX - sZ*cX;
-	t[0*N+2] = cZ*sY*cX + sZ*sX;
+	t[0*N+0] = cG*cB;
+	t[0*N+1] = cG*sB*sA - sG*cA;
+	t[0*N+2] = cG*sB*cA + sG*sA;
 	t[0*N+3] = pos.position[0];
 	//row 1
-	t[1*N+0] = sZ*cY;
-	t[1*N+1] = sZ*sY*sX + cZ*cZ;
-	t[1*N+2] = sZ*sY*cX - cZ*sX;
+	t[1*N+0] = sG*cB;
+	t[1*N+1] = sG*sB*sA + cG*cG;
+	t[1*N+2] = sG*sB*cA - cG*sA;
 	t[1*N+3] = pos.position[1];
 	//row 2
-	t[2*N+0] = -sY;
-	t[2*N+1] = cY*sX;
-	t[2*N+2] = cY*cX;
+	t[2*N+0] = -sB;
+	t[2*N+1] = cB*sA;
+	t[2*N+2] = cB*cA;
 	t[2*N+3] = pos.position[2];
 	//row 3
 	t[3*N+0] = 0;
@@ -116,19 +140,19 @@ void TransMatrix::calcHomogenous(FullPosition pos) {
 	t[3*N+3] = 1;
 
 	// //row 0
-	// t[0*N+0] = cX*cY*cZ - sX*sZ;
-	// t[0*N+1] = -cX*cY*sZ - sX*cZ;
-	// t[0*N+2] = cX*sY;
+	// t[0*N+0] = cA*cB*cG - sA*sG;
+	// t[0*N+1] = -cA*cB*sG - sA*cG;
+	// t[0*N+2] = cA*sB;
 	// t[0*N+3] = pos.position[0];
 	// //row 1
-	// t[1*N+0] = sX*cY*cZ + cX*sZ;
-	// t[1*N+1] = -sX*cY*sZ + cX*cZ;
-	// t[1*N+2] = sX*sY;
+	// t[1*N+0] = sA*cB*cG + cA*sG;
+	// t[1*N+1] = -sA*cB*sG + cA*cG;
+	// t[1*N+2] = sA*sB;
 	// t[1*N+3] = pos.position[1];
 	// //row 2
-	// t[2*N+0] = -sY*cZ;
-	// t[2*N+1] = sY*sZ;
-	// t[2*N+2] = cY;
+	// t[2*N+0] = -sB*cG;
+	// t[2*N+1] = sB*sG;
+	// t[2*N+2] = cB;
 	// t[2*N+3] = pos.position[2];
 	// //row 3
 	// t[3*N+0] = 0;
@@ -154,6 +178,62 @@ TransMatrix TransMatrix::multiply(int numRows, int numColumns, float* rhs) {
 	return newTM;
 }
 
+TransMatrix& TransMatrix::rotInverse() {
+	float tNew[NUM_MATRIX_ROWS*NUM_MATRIX_COLUMNS];
+	float det = t[0*N + 0] * (t[1*N + 1] * t[2*N + 2] - t[2*N + 1] * t[1*N + 2]) -
+             	t[0*N + 1] * (t[1*N + 0] * t[2*N + 2] - t[1*N + 2] * t[2*N + 0]) +
+            	t[0*N + 2] * (t[1*N + 0] * t[2*N + 1] - t[1*N + 1] * t[2*N + 0]);
+	double invdet = 1 / det;
+
+	tNew[0*N + 0] = (t[1*N + 1] * t[2*N + 2] - t[2*N + 1] * t[1*N + 2]) * invdet;
+	tNew[0*N + 1] = (t[0*N + 2] * t[2*N + 1] - t[0*N + 1] * t[2*N + 2]) * invdet;
+	tNew[0*N + 2] = (t[0*N + 1] * t[1*N + 2] - t[0*N + 2] * t[1*N + 1]) * invdet;
+	tNew[0*N + 3] = 0.0;
+
+	tNew[1*N + 0] = (t[1*N + 2] * t[2*N + 0] - t[1*N + 0] * t[2*N + 2]) * invdet;
+	tNew[1*N + 1] = (t[0*N + 0] * t[2*N + 2] - t[0*N + 2] * t[2*N + 0]) * invdet;
+	tNew[1*N + 2] = (t[1*N + 0] * t[0*N + 2] - t[0*N + 0] * t[1*N + 2]) * invdet;
+	tNew[1*N + 3] = 0.0;
+
+	tNew[2*N + 0] = (t[1*N + 0] * t[2*N + 1] - t[2*N + 0] * t[1*N + 1]) * invdet;
+	tNew[2*N + 1] = (t[2*N + 0] * t[0*N + 1] - t[0*N + 0] * t[2*N + 1]) * invdet;
+	tNew[2*N + 2] = (t[0*N + 0] * t[1*N + 1] - t[1*N + 0] * t[0*N + 1]) * invdet;
+	tNew[2*N + 3] = 0.0;
+
+	tNew[3*N + 0] = 0.0;
+	tNew[3*N + 1] = 0.0;
+	tNew[3*N + 2] = 0.0;
+	tNew[3*N + 3] = 0.0;
+
+	for(int i=0; i<NUM_MATRIX_ROWS*NUM_MATRIX_COLUMNS; ++i) {
+		t[i] = tNew[i];
+	}
+		
+	return *this;
+}
+
+TransMatrix& TransMatrix::transpose() {
+	swapPos(t,0*N+1,1*N+0);
+	swapPos(t,0*N+2,2*N+0);
+	swapPos(t,1*N+2,2*N+1);
+	
+	t[0*N + 3] = 0.0;
+	t[1*N + 3] = 0.0;
+	t[2*N + 3] = 0.0;
+	t[3*N + 0] = 0.0;
+	t[3*N + 1] = 0.0;
+	t[3*N + 2] = 0.0;
+	t[3*N + 3] = 0.0;
+	
+	return *this;
+
+}
+
+void TransMatrix::swapPos(float* pT, int a, int b) {
+	float temp = pT[a];
+	pT[a] = pT[b];
+	pT[b] = temp;
+}
 
 //ripped - may be wrong
 TransMatrix& TransMatrix::inverse() {
@@ -207,27 +287,50 @@ void TransMatrix::clear() {
 	}
 }
 
-void TransMatrix::calcRotationMatrix(float x, float y, float z, TransMatrix& m) {
-	float sX = sin(x);
-    float cX = cos(x);
-    float sY = sin(y);
-    float cY = cos(y);    
-    float sZ= sin(z);
-    float cZ = cos(z);
+void TransMatrix::calcRotationMatrix(float a, float b, float g, TransMatrix& m) {
+	float sA = sin(a);
+    float cA = cos(a);
+    float sB = sin(b);
+    float cB = cos(b);    
+    float sG= sin(g);
+    float cG = cos(g);
+	// //x' -> y' -> z'
+	// //row 0
+	// m.t[0*N+0] = cB*cG;
+	// m.t[0*N+1] = -cB*sG;
+	// m.t[0*N+2] = sB;
+	// m.t[0*N+3] = 0;
+	// //row 1
+	// m.t[1*N+0] = sA*sG + sA*sB*cG;
+	// m.t[1*N+1] = cA*cG - sA*sB*sG;
+	// m.t[1*N+2] = -sA*cB;
+	// m.t[1*N+3] = 0;
+	// //row 2
+	// m.t[2*N+0] = -sA*sG - cA*sB*cG;
+	// m.t[2*N+1] = sA*cG + cA*sB*sG;
+	// m.t[2*N+2] = cA*cB;
+	// m.t[2*N+3] = 0;
+	// //row 3
+	// m.t[3*N+0] = 0;
+	// m.t[3*N+1] = 0;
+	// m.t[3*N+2] = 0;
+	// m.t[3*N+3] = 1;
+
+	//walter
 	//row 0
-	m.t[0*N+0] = cZ*cY;
-	m.t[0*N+1] = cZ*sY*sX - sZ*cX;
-	m.t[0*N+2] = cZ*sY*cX + sZ*sX;
+	m.t[0*N+0] = cG*cB;
+	m.t[0*N+1] = cG*sB*sA - sG*cA;
+	m.t[0*N+2] = cG*sB*cA + sG*sA;
 	m.t[0*N+3] = 0;
 	//row 1
-	m.t[1*N+0] = sZ*cY;
-	m.t[1*N+1] = sZ*sY*sX + cZ*cZ;
-	m.t[1*N+2] = sZ*sY*cX - cZ*sX;
+	m.t[1*N+0] = sG*cB;
+	m.t[1*N+1] = sG*sB*sA + cG*cG;
+	m.t[1*N+2] = sG*sB*cA - cG*sA;
 	m.t[1*N+3] = 0;
 	//row 2
-	m.t[2*N+0] = -sY;
-	m.t[2*N+1] = cY*sX;
-	m.t[2*N+2] = cY*cX;
+	m.t[2*N+0] = -sB;
+	m.t[2*N+1] = cB*sA;
+	m.t[2*N+2] = cB*cA;
 	m.t[2*N+3] = 0;
 	//row 3
 	m.t[3*N+0] = 0;

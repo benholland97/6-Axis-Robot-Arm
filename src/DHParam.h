@@ -102,6 +102,10 @@ public:
 
 	TransMatrix& inverse();
 
+	TransMatrix& rotInverse();
+
+	TransMatrix& transpose();
+
 	void printContent();
 
 	void dummy() {
@@ -120,6 +124,7 @@ public:
 
 	
 private:
+	void swapPos(float* pt, int a, int b);
 	void calcGeneral();
 	void calcHomogenous(FullPosition pos);
 	float theta, alpha, r, d;
