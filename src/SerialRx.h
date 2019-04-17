@@ -23,7 +23,7 @@ public:
 
 private:
     Stream &stream;
-    float recBuffer[NUM_SERVOS];
+    float recBuffer[NO_ACTUATORS];
 
     void recvWithStartEndMarkers();
     void parseData(float* a);

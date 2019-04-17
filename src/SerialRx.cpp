@@ -35,7 +35,7 @@ bool SerialRX::recv(float *a) {
         //     stream.println(tempChars[i]);
         // }
         parseData(a);
-        showParsedData(a);
+        // showParsedData(a);
         newData = false;
         // for(int i=0; i<size; ++i) {
         //     a[i] = a[i];
@@ -110,7 +110,7 @@ void SerialRX::parseData(float* a) {
 }
 
 void SerialRX::showParsedData(float* a) {
-    for(int i=0; i<NUM_SERVOS; ++i) {
+    for(int i=0; i<NO_ACTUATORS; ++i) {
         stream.print(a[i]);
         stream.print("\t");
     }

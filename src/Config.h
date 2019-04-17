@@ -1,10 +1,14 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include <ArduinoSTL.h>
+
+#define M_PI			3.14159265358979323846
+
 //--------------PINS------------------
 
 //------SERVOS--------
-#define NUM_SERVOS  6
+#define NO_ACTUATORS  6
 
 #define MG996R_MAX_ANGLE 160
 #define MG996R_MAX_ANGLE_2 MG996R_MAX_ANGLE/2
@@ -14,36 +18,42 @@
 #define MG996R_MIN_ANGLE 0
 
 //Hip
-#define SERVO0_OFFSET   -15
+#define SERVO0_OFFSET   0
+// #define SERVO0_OFFSET   -15
 #define SERVO0MIN  95 // this is the 'minimum' pulse length count (out of 4096)
 #define SERVO0MAX  484
 
 //Waist
-#define SERVO1_OFFSET   50
+#define SERVO1_OFFSET   60
+// #define SERVO1_OFFSET   50
 #define SERVO1MIN  95 
 #define SERVO1MAX  380
 
 
 //Shoulder
-#define SERVO2_OFFSET   50
+#define SERVO2_OFFSET   -3
+// #define SERVO2_OFFSET   0
 #define SERVO2MIN  95 
 #define SERVO2MAX  460
 
 //Elbow
 #define MG90S_ELB_MIN_ANGLE -45
 #define MG90S_ELB_MAX_ANGLE 45
-#define SERVO3_OFFSET   -15
+#define SERVO3_OFFSET   -16
+// #define SERVO3_OFFSET   0
 // #define SERVO3MIN  165 
 // #define SERVO3MAX  375
 #define SERVO3MIN  95 
 #define SERVO3MAX  460
 
 //Wrist
+#define SERVO4_OFFSET   10
 #define SERVO4MIN  95 
 #define SERVO4MAX  440
 
 //Gripper-rotation
-#define SERVO5_OFFSET   -20
+// #define SERVO5_OFFSET   -20
+#define SERVO5_OFFSET   12
 #define SERVO5MIN  95 
 #define SERVO5MAX  484
 
